@@ -10,8 +10,9 @@ import UIKit
 final class DishViewController: UIViewController {
     
     // MARK: - Public properties
-    var presenter: DishPresenterProtocol!
+    var viewModel: DishViewModelProtocol!
     var imageService: ImageServiceProtocol!
+    var coordinator: DishCoordinator?
     
     // MARK: - Private properties
     private var dishesCollectionView: UICollectionView!
@@ -22,8 +23,6 @@ final class DishViewController: UIViewController {
         static let personImage = "person.fill.viewfinder"
         static let categoryIdentify = "DishCategoryButtonCell"
         static let dishIdentify = "DishCell"
-        static let error = "Error"
-        static let ok = "OK"
         static let accessibilityIdentifier = "DishesCollection"
     }
     
@@ -33,7 +32,8 @@ final class DishViewController: UIViewController {
         setupNavigationBar()
         setupFiltersCollectionView()
         setupDishesCollectionView()
-        presenter.getDishes()
+        bindViewModel()
+        viewModel.fetchDishes()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,16 +51,47 @@ final class DishViewController: UIViewController {
             scrollPosition: [])
     }
     
+    func configure(
+        viewModel: DishViewModelProtocol,
+        imageService: ImageServiceProtocol,
+        coordinator: DishCoordinator?
+    ) {
+        self.viewModel = viewModel
+        self.imageService = imageService
+        self.coordinator = coordinator
+    }
+    
     // MARK: - Private Methods
+    private func bindViewModel() {
+        viewModel.updateData = { [weak self] in
+            DispatchQueue.main.async {
+                self?.dishesCollectionView.reloadData()
+            }
+        }
+        
+        viewModel.presentError = { [weak self] errorMessage in
+            DispatchQueue.main.async {
+                let alertController = UIAlertController(
+                    title: Constants.error,
+                    message: errorMessage,
+                    preferredStyle: .alert
+                )
+                alertController.addAction(UIAlertAction(title: Constants.ok, style: .default))
+                self?.present(alertController, animated: true)
+            }
+        }
+    }
+    
     private func setupNavigationBar() {
-        let category = presenter.getCategory()
-        title = category.name
+        title = viewModel.categoryName
         view.backgroundColor = .white
         navigationController?.navigationBar.tintColor = .black
+        
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .white
         appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+        
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.topItem?.backBarButtonItem = UIBarButtonItem(
@@ -69,6 +100,7 @@ final class DishViewController: UIViewController {
             target: nil,
             action: nil
         )
+        
         setupRightUserImageView()
     }
     
@@ -162,63 +194,36 @@ final class DishViewController: UIViewController {
     }
 }
 
-// MARK: - DishViewProtocol
-extension DishViewController: DishViewProtocol {
-    func displayDishes(_ dishes: [Dish]) {
-        dishesCollectionView?.reloadData()
-    }
-    
-    func displayError(_ error: Error) {
-        let alert = UIAlertController(
-            title: Constants.error,
-            message: (error as? NetworkError)?.errorDescription ?? error.localizedDescription,
-            preferredStyle: .alert)
-        alert.addAction(UIAlertAction(
-            title: Constants.ok,
-            style: .default))
-        present(alert, animated: true)
-    }
-}
-
 // MARK: - UICollectionViewDataSource
 extension DishViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == self.filtersCollectionView {
-            return Dish.Teg.allCases.count
+        if collectionView == filtersCollectionView {
+            return Dish.Teg.stringValues().count
         } else {
-            return presenter.getFilteredDishes().count
+            return viewModel.dishes.count
         }
-    } //
+    }
     
-    func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        if collectionView == self.filtersCollectionView {
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: Constants.categoryIdentify,
-                for: indexPath) as? DishCategoryButtonCell else {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if collectionView == filtersCollectionView {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.categoryIdentify, for: indexPath) as? DishCategoryButtonCell else {
                 return UICollectionViewCell()
             }
-            let category = Dish.Teg.allCases[indexPath.item]
-            cell.configure(with: category.rawValue)
+            let tagValue = Dish.Teg.stringValues()[indexPath.item]
+            cell.configure(with: tagValue)
             cell.isSelected = indexPath.item == selectedFilterIndex
-            cell.accessibilityIdentifier = "FilterCell_\(indexPath.item)"
             return cell
         } else {
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: Constants.dishIdentify,
-                for: indexPath) as? DishCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.dishIdentify, for: indexPath) as? DishCell else {
                 return UICollectionViewCell()
             }
-            let dishes = presenter.getFilteredDishes()
-            let dish = dishes[indexPath.row]
-            cell.imageService = imageService
+            let dish = viewModel.dishes[indexPath.row]
             cell.configure(with: dish)
             return cell
         }
     }
 }
+
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension DishViewController: UICollectionViewDelegateFlowLayout {
@@ -226,15 +231,15 @@ extension DishViewController: UICollectionViewDelegateFlowLayout {
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        guard collectionView == self.filtersCollectionView else {
-            let padding: CGFloat = 16
-            let availableWidth = collectionView.frame.width - (padding * 3)
-            let widthPerItem = availableWidth / 3
-            return CGSize(width: widthPerItem, height: widthPerItem + 40)
+            guard collectionView == self.filtersCollectionView else {
+                let padding: CGFloat = 16
+                let availableWidth = collectionView.frame.width - (padding * 3)
+                let widthPerItem = availableWidth / 3
+                return CGSize(width: widthPerItem, height: widthPerItem + 40)
+            }
+            return CGSize(width: 90, height: 33)
         }
-        return CGSize(width: 90, height: 33)
-    }
-
+    
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
@@ -263,16 +268,16 @@ extension DishViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - UICollectionViewDelegate
 extension DishViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == self.filtersCollectionView {
+        if collectionView == dishesCollectionView {
+            let selectedDish = viewModel.dishes[indexPath.row]
+            coordinator?.showAddDishScreen(dish: selectedDish)
+        } else if collectionView == filtersCollectionView {
             selectedFilterIndex = indexPath.item
-            let selectedCategory = Dish.Teg.allCases[indexPath.item]
-            presenter.filterDishes(by: selectedCategory)
+            let selectedTag = Dish.Teg.stringValues()[indexPath.item]
+            viewModel.filterDishes(by: selectedTag)
             filtersCollectionView.reloadData()
+            dishesCollectionView.reloadData()
             filtersCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredHorizontally)
-        } else if collectionView == self.dishesCollectionView { 
-            let filteredDishes = presenter.getFilteredDishes()
-            let selectedDish = filteredDishes[indexPath.item]
-            presenter.showAddDishScreen(dish: selectedDish)
         }
     }
 }
@@ -290,12 +295,12 @@ extension DishViewController: UIImagePickerControllerDelegate, UINavigationContr
     func imagePickerController(
         _ picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        if let selectedImage = info[.originalImage] as? UIImage {
-            imageService.saveUserImage(selectedImage)
-            loadUserImage() 
+            if let selectedImage = info[.originalImage] as? UIImage {
+                imageService.saveUserImage(selectedImage)
+                loadUserImage() 
+            }
+            picker.dismiss(animated: true)
         }
-        picker.dismiss(animated: true)
-    }
 }
 
 // MARK: - ImageServiceDelegate

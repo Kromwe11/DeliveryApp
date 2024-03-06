@@ -10,15 +10,9 @@ import UIKit
 final class TabBarController: UITabBarController {
 
     // MARK: - Private properties
-    private var categoryModuleAssembly: CategoryModuleAssemblyProtocol?
-    private var dishModuleAssembly: DishModuleAssemblyProtocol?
-    private var addDishModuleAssembly: AddDishModuleAssemblyProtocol?
+    private var categoryCoordinator: CategoryCoordinator?
 
     private enum Constants {
-        static let main = "Главная"
-        static let account = "Аккаунт"
-        static let search = "Поиск"
-        static let cart = "Корзина"
         static let home = "home"
         static let userIconImage = "person.circle"
         static let searchImage = "magnifyingglass"
@@ -26,37 +20,21 @@ final class TabBarController: UITabBarController {
     }
 
     // MARK: - Public Methods
-    func configure(
-        categoryModuleAssembly: CategoryModuleAssemblyProtocol,
-        dishModuleAssembly: DishModuleAssemblyProtocol,
-        addDishModuleAssembly: AddDishModuleAssemblyProtocol
-    ) {
-        self.categoryModuleAssembly = categoryModuleAssembly
-        self.dishModuleAssembly = dishModuleAssembly
-        self.addDishModuleAssembly = addDishModuleAssembly
+    func configure(categoryCoordinator: CategoryCoordinator) {
+        self.categoryCoordinator = categoryCoordinator
         setupViewControllers()
     }
 
     // MARK: - Private Methods
     private func setupViewControllers() {
-        guard let categoryModuleAssembly = self.categoryModuleAssembly,
-              let dishModuleAssembly = self.dishModuleAssembly,
-              let addDishModuleAssembly = self.addDishModuleAssembly else {
+        guard let categoryCoordinator = self.categoryCoordinator else {
             return
         }
 
         // Категории
-        let categoryNavigationController = UINavigationController()
-        let categoryRouter = Router(
-            navigationController: categoryNavigationController,
-            dishModuleAssembly: dishModuleAssembly,
-            addDishModuleAssembly: addDishModuleAssembly,
-            categoryModuleAssembly: categoryModuleAssembly
-        )
-        let categoryViewController = categoryModuleAssembly.createModule(router: categoryRouter)
-        categoryNavigationController.viewControllers = [categoryViewController]
+        let categoryNavigationController = categoryCoordinator.navigationController
         categoryNavigationController.tabBarItem = UITabBarItem(
-            title: Constants.main,
+            title: L10n.main,
             image: UIImage(named: Constants.home),
             tag: 0
         )
@@ -65,7 +43,7 @@ final class TabBarController: UITabBarController {
         let searchViewController = SearchViewController()
         let searchNavigationController = UINavigationController(rootViewController: searchViewController)
         searchNavigationController.tabBarItem = UITabBarItem(
-            title: Constants.search,
+            title: L10n.search,
             image: UIImage(systemName: Constants.searchImage),
             tag: 1
         )
@@ -74,7 +52,7 @@ final class TabBarController: UITabBarController {
         let cartViewController = CartViewController()
         let cartNavigationController = UINavigationController(rootViewController: cartViewController)
         cartNavigationController.tabBarItem = UITabBarItem(
-            title: Constants.cart,
+            title: L10n.cart,
             image: UIImage(systemName: Constants.cartImage),
             tag: 2
         )
@@ -83,17 +61,17 @@ final class TabBarController: UITabBarController {
         let userViewController = UserViewController()
         let userNavigationController = UINavigationController(rootViewController: userViewController)
         userNavigationController.tabBarItem = UITabBarItem(
-            title: Constants.account,
+            title: L10n.account,
             image: UIImage(systemName: Constants.userIconImage),
             tag: 3
         )
         
-        // Настройка viewControllers для TabBarController
         self.viewControllers = [
             categoryNavigationController,
             searchNavigationController,
             cartNavigationController,
             userNavigationController
         ]
+        categoryCoordinator.start()
     }
 }

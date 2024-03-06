@@ -7,6 +7,8 @@ target 'MVVM' do
 
 pod 'Alamofire'
 pod 'SwiftLint'
+pod 'RealmSwift'
+pod 'SwiftGen'
 
   target 'MVVMTests' do
     inherit! :search_paths

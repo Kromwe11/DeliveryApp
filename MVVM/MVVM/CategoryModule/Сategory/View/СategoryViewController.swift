@@ -10,8 +10,8 @@ import UIKit
 final class CategoryViewController: UIViewController {
     
     // MARK: - Public properties
-    var presenter: CategoryViewPresenterProtocol!
     var imageService: ImageServiceProtocol!
+    var viewModel: CategoryViewModelProtocol!
     
     // MARK: - Private properties
     private var tableView: UITableView!
@@ -20,7 +20,6 @@ final class CategoryViewController: UIViewController {
     private let activityIndicator = UIActivityIndicatorView(style: .large)
     
     private enum Constants {
-        static let cityError = "Местоположение не доступно"
         static let personImage = "person.fill.viewfinder"
         static let geoPoint = "geoPoint"
         static let identifier = "ru_RU"
@@ -29,7 +28,6 @@ final class CategoryViewController: UIViewController {
         static let error = "Error"
         static let ok = "Ok"
         static let accessibilityIdentifier = "CategoriesTable"
-        static let unknownError = "Произошла неизвестная ошибка. Пожалуйста, попробуйте позже."
     }
     
     // MARK: - Lifecycle
@@ -40,7 +38,8 @@ final class CategoryViewController: UIViewController {
         setupActivityIndicator()
         setupUserImageView()
         loadUserImage()
-        presenter.getCategories()
+        bindViewModel()
+        viewModel.getCategories()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -48,7 +47,40 @@ final class CategoryViewController: UIViewController {
         loadUserImage()
     }
     
+    func configure(viewModel: CategoryViewModelProtocol, imageService: ImageServiceProtocol) {
+        self.viewModel = viewModel
+        self.imageService = imageService
+    }
+    
     // MARK: - Private Methods
+    private func bindViewModel() {
+        viewModel.updateData = { [weak self] in
+            DispatchQueue.main.async {
+                self?.categories = self?.viewModel.categories ?? []
+                self?.tableView.reloadData()
+                self?.activityIndicator.stopAnimating()
+            }
+        }
+        
+        viewModel.presentError = { [weak self] errorMessage in
+            DispatchQueue.main.async {
+                let alertController = UIAlertController(
+                    title: Constants.error,
+                    message: errorMessage,
+                    preferredStyle: .alert
+                )
+                alertController.addAction(UIAlertAction(title: Constants.ok, style: .default))
+                self?.present(alertController, animated: true)
+            }
+        }
+        
+        viewModel.updateCityName = { [weak self] cityName in
+            DispatchQueue.main.async {
+                self?.setupLeftStackView(cityName: cityName)
+            }
+        }
+    }
+    
     private func setupActivityIndicator() {
         view.addSubview(activityIndicator)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -145,7 +177,7 @@ final class CategoryViewController: UIViewController {
                 } else {
                     let systemImage = UIImage(
                         systemName: Constants.personImage)?.withTintColor(.black, renderingMode: .alwaysOriginal
-                         )
+                        )
                     self?.userImageView.image = systemImage
                 }
             }
@@ -158,66 +190,10 @@ final class CategoryViewController: UIViewController {
     }
 }
 
-// MARK: - СategoryViewProtocol
-extension CategoryViewController: CategoryViewProtocol {
-    
-    func updateCityName(_ cityName: String) {
-        DispatchQueue.main.async {
-            self.setupLeftStackView(cityName: cityName)
-        }
-    }
-    
-    func displayCategories(_ categories: [CategoryDish]) {
-        self.categories = categories
-        guard !categories.isEmpty else {
-            self.activityIndicator.stopAnimating()
-            self.activityIndicator.removeFromSuperview()
-            return
-        }
-        let loadImagesGroup = DispatchGroup()
-        for category in categories {
-            guard let url = URL(string: category.imageURL) else { continue }
-            loadImagesGroup.enter()
-            imageService.loadImage(from: url) { _ in
-                loadImagesGroup.leave()
-            }
-        }
-        loadImagesGroup.notify(queue: .main) {
-            self.tableView.reloadData()
-            self.activityIndicator.stopAnimating()
-            self.activityIndicator.removeFromSuperview()
-        }
-    }
-    
-    func displayError(_ error: Error) {
-        DispatchQueue.main.async {
-            let errorMessage = (error as? NetworkError)?.localizedDescription ?? Constants.unknownError
-            let alert = UIAlertController(
-                title: Constants.error,
-                message: errorMessage,
-                preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: Constants.ok, style: .default))
-            self.present(alert, animated: true)
-            self.activityIndicator.stopAnimating()
-            self.activityIndicator.removeFromSuperview()
-        }
-    }
-    
-    private func incrementLoadedImages(_ count: inout Int, total: Int) {
-        count += 1
-        guard count == total else { return }
-        tableView.reloadData()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.activityIndicator.stopAnimating()
-            self.activityIndicator.removeFromSuperview()
-        }
-    }
-}
-
 // MARK: - UITableViewDataSource
 extension CategoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        return viewModel.categories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -227,7 +203,7 @@ extension CategoryViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let category = categories[indexPath.row]
+        let category = viewModel.categories[indexPath.row]
         cell.imageService = self.imageService
         cell.configure(with: category)
         cell.selectionStyle = .none
@@ -238,8 +214,8 @@ extension CategoryViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension CategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let category = categories[indexPath.row]
-        presenter.didSelectCategory(category: category)
+        let category = viewModel.categories[indexPath.row]
+        viewModel.didSelectCategory(category: category)
     }
 }
 
@@ -256,12 +232,12 @@ extension CategoryViewController: UIImagePickerControllerDelegate, UINavigationC
     func imagePickerController(
         _ picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        if let selectedImage = info[.originalImage] as? UIImage {
-            userImageView.image = selectedImage
-            imageService.saveUserImage(selectedImage)
+            if let selectedImage = info[.originalImage] as? UIImage {
+                userImageView.image = selectedImage
+                imageService.saveUserImage(selectedImage)
+            }
+            picker.dismiss(animated: true)
         }
-        picker.dismiss(animated: true)
-    }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)

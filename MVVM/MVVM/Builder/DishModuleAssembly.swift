@@ -7,47 +7,38 @@
 
 import UIKit
 
-/// Протокол, определяющий интерфейс сборщика модуля списка блюд категории.
 protocol DishModuleAssemblyProtocol {
-    /// Создает экземпляр модуля для отображения блюд определенной категории.
-    /// - Parameters:
-    ///   - router: Роутер для навигации между экранами.
-    ///   - category: Категория, блюда которой будут отображаться.
-    /// - Returns: Контроллер представления, сконфигурированный для отображения блюд категории.
-    func createModule(router: RouterProtocol, category: CategoryDish) -> UIViewController
+    func createModule(category: CategoryDish, coordinator: DishCoordinator) -> UIViewController
 }
 
 final class DishModuleAssembly: DishModuleAssemblyProtocol {
     // MARK: - Private properties
     private let imageService: ImageServiceProtocol
-    private let coreDataStorageManager: CoreDataManaging
+    private let realmStorageManager: RealmManaging
     private let networkManager: NetworkManagerProtocol
     
-    // MARK: - Init
+    // MARK: - init
     init(
         imageService: ImageServiceProtocol,
-        coreDataStorageManager: CoreDataManaging,
+        realmStorageManager: RealmManaging,
         networkManager: NetworkManagerProtocol
     ) {
         self.imageService = imageService
-        self.coreDataStorageManager = coreDataStorageManager
+        self.realmStorageManager = realmStorageManager
         self.networkManager = networkManager
     }
     
     // MARK: - Public Methods
-    func createModule(router: RouterProtocol, category: CategoryDish) -> UIViewController {
-        let view = DishViewController()
-        let presenter = DishPresenter()
-        
-        presenter.setup(
-            view: view,
+    func createModule(category: CategoryDish, coordinator: DishCoordinator) -> UIViewController {
+        let viewModel = DishViewModel()
+        viewModel.configure(
             networkManager: networkManager,
-            router: router, 
+            realmStorageManager: realmStorageManager,
             category: category,
-            coreDataStorageManager: coreDataStorageManager)
-        
-        view.presenter = presenter
-        view.imageService = imageService
+            coordinator: coordinator
+        )
+        let view = DishViewController()
+        view.configure(viewModel: viewModel, imageService: imageService, coordinator: coordinator)
         
         return view
     }

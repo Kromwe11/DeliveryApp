@@ -6,14 +6,27 @@
 //
 
 import Foundation
+import RealmSwift
 
-/// Сategories
-struct Сategories: Decodable {
-    let сategories: [CategoryDish]
+final class CategoryDish: Object, Decodable {
+    @objc dynamic var id: Int = 0
+    @objc dynamic var name: String = ""
+    @objc dynamic var imageURL: String = ""
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
 }
 
-/// Сategory
-struct CategoryDish: Decodable, Equatable {
+struct CategoriesResponse: Decodable {
+    let categories: [CategoryResponse]
+
+    enum CodingKeys: String, CodingKey {
+        case categories = "сategories"
+    }
+}
+
+struct CategoryResponse: Decodable {
     let id: Int
     let name: String
     let imageURL: String

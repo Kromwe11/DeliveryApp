@@ -40,7 +40,7 @@ final class DishCell: UICollectionViewCell {
     
     // MARK: Private Methods
     private func loadImage(for dish: Dish) {
-        guard let imageURL = URL(string: dish.imageURL) else {
+        guard let imageURL = URL(string: dish.imageURL), let imageService = self.imageService else {
             dishImageView.image = UIImage(named: Constants.placeholder)
             return
         }
@@ -50,8 +50,9 @@ final class DishCell: UICollectionViewCell {
                 self?.dishImageView.image = image ?? UIImage(named: Constants.placeholder)
             }
         }
-        currentLoadTask?.resume() 
+        currentLoadTask?.resume()
     }
+
     
     private func setupGrayView() {
         grayView.backgroundColor = .castomeGray

@@ -10,8 +10,7 @@ import UIKit
 final class AddDishViewController: UIViewController {
     
     // MARK: Public properties
-    var presenter: AddDishPresenterProtocol!
-    var imageService: ImageServiceProtocol?
+    var viewModel: AddDishViewModelProtocol!
     
     // MARK: - Private properties
     private let contentView = UIView()
@@ -30,7 +29,6 @@ final class AddDishViewController: UIViewController {
         static let gram = "г"
         static let xmarkImage = "xmark"
         static let heartImage = "heart"
-        static let addToCart = "Добавить в корзину"
         static let identifierCloseButton = "CloseButton"
         static let identifierAddToCartButton = "AddToCartButton"
         static let imageViewSpacing: CGFloat = 10
@@ -47,6 +45,8 @@ final class AddDishViewController: UIViewController {
         static let addToCartButtonHeight: CGFloat = 48
         static let widthHeightButton: CGFloat = 36
         static let spacingButton: CGFloat = 8
+        static let error = "Error"
+        static let ok = "OK"
     }
     
     // MARK: - Lifecycle
@@ -63,14 +63,36 @@ final class AddDishViewController: UIViewController {
         setupAddToCartButton()
         setupCloseButton()
         setupHeartButton()
-        presenter.getDishDetails()
+        bindViewModel()
+        viewModel.loadDishDetails()
+    }
+    
+    // MARK: Public Methods
+    func configure(viewModel: AddDishViewModelProtocol) {
+        self.viewModel = viewModel
     }
     
     // MARK: Private Methods
-    private func loadImage(fromURL url: URL, into imageView: UIImageView) {
-        imageService?.loadImage(from: url) { image in
+    private func bindViewModel() {
+        viewModel.updateDishDetails = { [weak self] dish, image in
             DispatchQueue.main.async {
-                imageView.image = image
+                self?.nameLabel.text = dish.name
+                self?.priceLabel.text = "\(dish.price) \(Constants.rub)"
+                self?.weightLabel.text = "\(dish.weight) \(Constants.gram)"
+                self?.descriptionLabel.text = dish.dishDescription
+                self?.imageView.image = image
+            }
+        }
+        
+        viewModel.presentError = { [weak self] errorMessage in
+            DispatchQueue.main.async {
+                let alert = UIAlertController(
+                    title: Constants.error,
+                    message: errorMessage,
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: Constants.ok, style: .default, handler: nil))
+                self?.present(alert, animated: true, completion: nil)
             }
         }
     }
@@ -163,7 +185,7 @@ final class AddDishViewController: UIViewController {
         contentView.addSubview(addToCartButton)
         addToCartButton.accessibilityIdentifier = Constants.identifierAddToCartButton
         addToCartButton.translatesAutoresizingMaskIntoConstraints = false
-        addToCartButton.setTitle(Constants.addToCart, for: .normal)
+        addToCartButton.setTitle(L10n.addToCart, for: .normal)
         addToCartButton.backgroundColor = .castomeBlue
         addToCartButton.setTitleColor(.white, for: .normal)
         addToCartButton.layer.cornerRadius = 5
@@ -250,18 +272,5 @@ final class AddDishViewController: UIViewController {
     
     @objc private func addCartButtonTapped() {
         dismiss(animated: true, completion: nil)
-    }
-}
-
-// MARK: AddDishViewProtocol
-extension AddDishViewController: AddDishViewProtocol {
-    func displayDishDetails(_ dish: Dish) {
-        nameLabel.text = dish.name
-        priceLabel.text = "\(dish.price) Р"
-        weightLabel.text = "\(dish.weight) г"
-        descriptionLabel.text = dish.dishDescription
-
-        guard let url = URL(string: dish.imageURL) else { return }
-        loadImage(fromURL: url, into: imageView)
     }
 }

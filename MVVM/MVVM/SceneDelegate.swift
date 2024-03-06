@@ -6,9 +6,12 @@
 //
 
 import UIKit
+import RealmSwift
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    var categoryCoordinator: CategoryCoordinator?
+    var tabBarController: TabBarController?
 
     func scene(
         _ scene: UIScene,
@@ -17,32 +20,39 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        guard 
-            let appDelegate = UIApplication.shared.delegate as? AppDelegate 
-        else { return }
-        let coreDataStorageManager = CoreDataStorageManager(container: appDelegate.persistentContainer)
+        let realmStorageManager = RealmStorageManager()
         let networkManager = NetworkManager()
         let imageService = ImageService()
 
+        let navigationController = UINavigationController()
+        
         let categoryModuleAssembly = CategoryModuleAssembly(
             imageService: imageService,
-            coreDataStorageManager: coreDataStorageManager,
-            networkManager: networkManager)
+            realmStorageManager: realmStorageManager,
+            networkManager: networkManager
+        )
+        
         let dishModuleAssembly = DishModuleAssembly(
             imageService: imageService,
-            coreDataStorageManager: coreDataStorageManager,
-            networkManager: networkManager)
-        let addDishModuleAssembly = AddDishModuleAssembly(
-            imageService: imageService,
-            coreDataStorageManager: coreDataStorageManager)
-
-        let tabBarController = TabBarController()
-        tabBarController.configure(
-            categoryModuleAssembly: categoryModuleAssembly,
-            dishModuleAssembly: dishModuleAssembly,
-            addDishModuleAssembly: addDishModuleAssembly
+            realmStorageManager: realmStorageManager,
+            networkManager: networkManager
         )
 
+        let addDishModuleAssembly = AddDishModuleAssembly(
+            imageService: imageService
+        )
+
+        categoryCoordinator = CategoryCoordinator(
+            navigationController: navigationController,
+            assembly: categoryModuleAssembly,
+            dishAssembly: dishModuleAssembly,
+            addDishAssembly: addDishModuleAssembly
+        )
+        
+        let tabBarController = TabBarController()
+        tabBarController.configure(categoryCoordinator: categoryCoordinator!)
+        self.tabBarController = tabBarController
+        
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()

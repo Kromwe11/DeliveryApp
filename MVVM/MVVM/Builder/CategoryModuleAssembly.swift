@@ -7,47 +7,39 @@
 
 import UIKit
 
-/// Протокол, определяющий интерфейс сборщика модуля списка категорий.
 protocol CategoryModuleAssemblyProtocol {
-    /// Создает экземпляр модуля для отображения списка категорий.
-    /// - Parameter router: Роутер для навигации между экранами.
-    /// - Returns: Контроллер представления, сконфигурированный для отображения списка категорий.
-    func createModule(router: RouterProtocol) -> UIViewController
+    func createModule(coordinator: CategoryCoordinator) -> UIViewController
 }
 
 final class CategoryModuleAssembly: CategoryModuleAssemblyProtocol {
+    
     // MARK: - Private properties
     private let imageService: ImageServiceProtocol
-    private let coreDataStorageManager: CoreDataManaging
+    private let realmStorageManager: RealmManaging
     private let networkManager: NetworkManagerProtocol
     
-    // MARK: - Init
+    // MARK: init
     init(
         imageService: ImageServiceProtocol,
-        coreDataStorageManager: CoreDataManaging,
+        realmStorageManager: RealmManaging,
         networkManager: NetworkManagerProtocol
     ) {
         self.imageService = imageService
-        self.coreDataStorageManager = coreDataStorageManager
+        self.realmStorageManager = realmStorageManager
         self.networkManager = networkManager
     }
     
-    // MARK: - Public Methods
-    func createModule(router: RouterProtocol) -> UIViewController {
-        let view = CategoryViewController()
-        let locationService = LocationService()
-        let presenter = CategoryPresenter()
-        
-        presenter.setup(
-            view: view,
+    // MARK: Public Methods
+    func createModule(coordinator: CategoryCoordinator) -> UIViewController {
+        let viewModel = CategoryViewModel()
+        viewModel.configure(
             networkManager: networkManager,
-            router: router,
-            coreDataStorageManager: coreDataStorageManager,
-            locationService: locationService)
-        
-        view.presenter = presenter
-        view.imageService = imageService
-        
-        return view
+            realmStorageManager: realmStorageManager,
+            locationService: LocationService(),
+            coordinator: coordinator
+        )
+        let viewController = CategoryViewController()
+        viewController.configure(viewModel: viewModel, imageService: imageService)
+        return viewController
     }
 }
