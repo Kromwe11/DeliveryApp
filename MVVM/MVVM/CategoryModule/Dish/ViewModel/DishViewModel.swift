@@ -8,20 +8,25 @@
 import Foundation
 
 protocol DishViewModelProtocol: AnyObject {
-    var updateData: (() -> Void)? { get set }
+    var updateData: (() -> ())? { get set }
     var presentError: ((String) -> Void)? { get set }
     var dishes: [Dish] { get set }
     var categoryName: String { get set }
     var onRequestShowAddDish: ((Dish) -> Void)? { get set }
     
-    func configure(networkManager: NetworkManagerProtocol, realmStorageManager: RealmManaging, category: CategoryDish, coordinator: DishCoordinator)
+    func configure(
+        networkManager: NetworkManagerProtocol,
+        realmStorageManager: RealmManaging,
+        category: CategoryDish,
+        coordinator: DishCoordinator
+    )
     func fetchDishes()
     func filterDishes(by tag: String)
     func showAddDishScreen(dish: Dish)
 }
 
 final class DishViewModel: DishViewModelProtocol {
-    var updateData: (() -> Void)?
+    var updateData: (() -> ())?
     var presentError: ((String) -> Void)?
     var dishes: [Dish] = []
     var categoryName: String = ""
@@ -32,7 +37,12 @@ final class DishViewModel: DishViewModelProtocol {
     private var category: CategoryDish?
     private var coordinator: DishCoordinator?
     
-    func configure(networkManager: NetworkManagerProtocol, realmStorageManager: RealmManaging, category: CategoryDish, coordinator: DishCoordinator) {
+    func configure(
+        networkManager: NetworkManagerProtocol,
+        realmStorageManager: RealmManaging,
+        category: CategoryDish,
+        coordinator: DishCoordinator
+    ) {
         self.networkManager = networkManager
         self.realmStorageManager = realmStorageManager
         self.category = category

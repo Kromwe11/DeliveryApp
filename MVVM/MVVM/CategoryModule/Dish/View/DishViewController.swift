@@ -24,6 +24,8 @@ final class DishViewController: UIViewController {
         static let categoryIdentify = "DishCategoryButtonCell"
         static let dishIdentify = "DishCell"
         static let accessibilityIdentifier = "DishesCollection"
+        static let error = "Error"
+        static let ok = "OK"
     }
     
     // MARK: - Lifecycle
@@ -204,9 +206,15 @@ extension DishViewController: UICollectionViewDataSource {
         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
         if collectionView == filtersCollectionView {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.categoryIdentify, for: indexPath) as? DishCategoryButtonCell else {
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: Constants.categoryIdentify,
+                for: indexPath
+            ) as? DishCategoryButtonCell else {
                 return UICollectionViewCell()
             }
             let tagValue = Dish.Teg.stringValues()[indexPath.item]
@@ -214,7 +222,10 @@ extension DishViewController: UICollectionViewDataSource {
             cell.isSelected = indexPath.item == selectedFilterIndex
             return cell
         } else {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.dishIdentify, for: indexPath) as? DishCell else {
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: Constants.dishIdentify,
+                for: indexPath
+            ) as? DishCell else {
                 return UICollectionViewCell()
             }
             let dish = viewModel.dishes[indexPath.row]
@@ -223,7 +234,6 @@ extension DishViewController: UICollectionViewDataSource {
         }
     }
 }
-
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension DishViewController: UICollectionViewDelegateFlowLayout {

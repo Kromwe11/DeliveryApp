@@ -432,7 +432,6 @@
 			buildConfigurationList = E569F9F72B7E0EBA00A138E6 /* Build configuration list for PBXNativeTarget "MVVM" */;
 			buildPhases = (
 				A1CDC0E1BC24A091736B7B4C /* [CP] Check Pods Manifest.lock */,
-				E5265D672B88E3C100A26961 /* SwiftGen */,
 				E569F9C62B7E0EB800A138E6 /* Sources */,
 				E569F9C72B7E0EB800A138E6 /* Frameworks */,
 				E569F9C82B7E0EB800A138E6 /* Resources */,
@@ -659,27 +658,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "
-";
-		};
-		E5265D672B88E3C100A26961 /* SwiftGen */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = SwiftGen;
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "
-";
+			shellScript = "${PODS_ROOT}/SwiftLint/swiftlint\n";
 		};
 		FC9A60C3F5514FA7C7CF381E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

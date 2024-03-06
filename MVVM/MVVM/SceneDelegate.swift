@@ -5,8 +5,8 @@
 //  Created by Висент Щепетков on 25.01.2024.
 //
 
-import UIKit
 import RealmSwift
+import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
