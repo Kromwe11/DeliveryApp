@@ -1,7 +1,6 @@
 //
 //  SceneDelegate.swift
-//  TestTestMVVM
-//
+//  DeliveryApp
 //
 
 import RealmSwift

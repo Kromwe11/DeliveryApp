@@ -1,8 +1,6 @@
 //
 //  ApplicationCoordinator.swift
-//  MVVM
-//
-//  Created by Висент Щепетков on 14.03.2024.
+//  DeliveryApp
 //
 
 import RealmSwift

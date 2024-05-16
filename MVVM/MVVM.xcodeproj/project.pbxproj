@@ -197,7 +197,7 @@
 		E569F9C12B7E0EB700A138E6 = {
 			isa = PBXGroup;
 			children = (
-				E569F9CC2B7E0EB800A138E6 /* MVVM */,
+				E569F9CC2B7E0EB800A138E6 /* DeliveryApp */,
 				E569F9CB2B7E0EB800A138E6 /* Products */,
 				64514D78E67C3E720C6071D6 /* Pods */,
 				FBB668AC72F1695B233E2B84 /* Frameworks */,
@@ -214,17 +214,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E569F9CC2B7E0EB800A138E6 /* MVVM */ = {
+		E569F9CC2B7E0EB800A138E6 /* DeliveryApp */ = {
 			isa = PBXGroup;
 			children = (
 				E57713862B9A8496005C408A /* Application */,
 				E57713902B9A88D5005C408A /* Domain */,
 				E577138E2B9A8857005C408A /* Data */,
 				E57713882B9A850C005C408A /* Presentation */,
-				E569F9DE2B7E0EBA00A138E6 /* Info.plist */,
 				E577138A2B9A869F005C408A /* Resource */,
 			);
-			path = MVVM;
+			path = DeliveryApp;
 			sourceTree = "<group>";
 		};
 		E569FA022B7E0FC700A138E6 /* TabBarController */ = {
@@ -408,6 +407,7 @@
 		E577138C2B9A875A005C408A /* Info */ = {
 			isa = PBXGroup;
 			children = (
+				E569F9DE2B7E0EBA00A138E6 /* Info.plist */,
 			);
 			path = Info;
 			sourceTree = "<group>";

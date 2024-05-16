@@ -1,6 +1,6 @@
 //
 //  NetworkManager.swift
-//  DeliveryApp on 25.01.2024.
+//  DeliveryApp
 //
 
 import Foundation

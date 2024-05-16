@@ -1,8 +1,7 @@
 //
 //  LocationError.swift
-//  MVVM
+//  DeliveryApp
 //
-//  Created by Висент Щепетков on 16.05.2024.
 //
 
 import Foundation
