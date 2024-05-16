@@ -1,8 +1,7 @@
 strings:
   inputs:
-    - /Users/kromwell/Desktop/MVVM/MVVM/MVVM/Localozable/en.lproj
+    - /Users/kromwell/Desktop/MVVM/MVVM/MVVM/Resource/Localizable/en.lproj
   filter: .+\.strings$
   outputs:
     - templateName: structured-swift5
-      output: /Users/kromwell/Desktop/MVVM/MVVM/MVVM/Localozable/SwiftGenLocalozable.swift
-      
+      output: /Users/kromwell/Desktop/MVVM/MVVM/MVVM/Resource/Localizable/SwiftGenLocalizable.swift

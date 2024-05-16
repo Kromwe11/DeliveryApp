@@ -1,0 +1,49 @@
+# Отключаем следующие правила:
+--disable void, trailingCommas, unusedArguments, enumNamespaces
+--maxwidth 120
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--indent 4
+--exclude Pods
+
+# Генерируем хедер
+--header "{file}\nCopyright © Movie. All rights reserved."
+
+# Отключаем отступ
+--ifdef no-indent
+
+# Используем self только для инициализации 
+--self init-only
+
+# Удалить избыточный тип из объявлений прочерти
+--redundanttype inferred
+
+# Удаляет пространство около квадратных скобок
+--enable spaceAroundBrackets
+
+# Добавляет пространство около фигурных скобок
+--enable spaceAroundBraces
+
+# Добавляет пробелы внутри фигурных скобок
+--enable spaceInsideBraces
+
+# Удаляет пространности около треугольных скобок
+--enable spaceAroundGenerics
+
+# Добавляет пробелы между операторами сложения и тд
+--nospaceoperators
+
+# Удаляет пробелы внутри скобок 
+--enable spaceInsideParens
+
+# Вставляет пустую строку перед новым классом, структурой, протоколом и тд.
+--enable blankLinesAtEndOfScope
+
+# Заменяет последовательность пробелов - одним пробелом
+--enable consecutiveSpaces
+
+# Удаляет пустую строку в конце тела 
+--enable blankLinesAtEndOfScope
+
+--swiftversion 5.3

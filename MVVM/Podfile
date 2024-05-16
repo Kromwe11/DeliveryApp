@@ -9,6 +9,7 @@ pod 'Alamofire'
 pod 'SwiftLint'
 pod 'RealmSwift'
 pod 'SwiftGen'
+pod 'SwiftFormat/CLI'
 
   target 'MVVMTests' do
     inherit! :search_paths
