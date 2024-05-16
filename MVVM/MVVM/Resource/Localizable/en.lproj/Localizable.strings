@@ -1,0 +1,26 @@
+/* 
+  Localizable.strings
+  MVVM
+
+  Created by Висент Щепетков on 23.02.2024.
+  
+*/
+
+"main" = "Main";
+"account" = "Account";
+"search" = "Search";
+"cart" = "Cart";
+"networkError" = "There is no access to the Internet.";
+"cityError" = "Location is not available";
+"addToCart" = "Add to Cart";
+"detailError" = "Detailed information about the dish is not available";
+"rice" = "321";
+"allMenu" = "All menu";
+"salad" = "Salads";
+"rice" = "With rice";
+"fish" = "With fish";
+"connectionError" = "Failed to connect to the network. Please check your internet connection.";
+"serverError" = "A server error has occurred. Please try again later.";
+"noInternetAccess" = "No internet access.";
+"locationDenied" = "Access to geolocation is prohibited.";
+"Error" = "Error";
